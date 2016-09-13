@@ -2,7 +2,6 @@ package org.adamrpc;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -52,14 +51,14 @@ public class Main {
         return result;
     }
     private static String prefixGameFunctionCalls(final String content) {
-        return content.replaceAll("(\\s)outputText\\(", "$1CoC.outputText(")
-                .replaceAll("(\\s)clearOutput\\(", "$1CoC.clearOutput(")
-                .replaceAll("(\\s)doNext\\(", "$1CoC.doNext(")
-                .replaceAll("(\\s)menu\\(", "$1CoC.menu(")
-                .replaceAll("(\\s)addButton\\(", "$1CoC.addButton(")
-                .replaceAll("([\\s(])camp([\\s.\\[])", "$1CoC.camp$2")
-                .replaceAll("([\\s(])player([\\s.\\[])", "$1CoC.player$2")
-                .replaceAll("([\\s(])flags([\\s.\\[])", "$1CoC.flags$2");
+        return content.replaceAll("(\\s)outputText\\(", "$1EngineCore.outputText(")
+                .replaceAll("(\\s)clearOutput\\(", "$1EngineCore.clearOutput(")
+                .replaceAll("(\\s)doNext\\(", "$1BaseContent.doNext(")
+                .replaceAll("(\\s)menu\\(", "$1EngineCore.menu(")
+                .replaceAll("(\\s)addButton\\(", "$1EngineCore.addButton(")
+                .replaceAll("([\\s(])camp([\\s.\\[])", "$1Game.getInstance().scenes.camp$2")
+                .replaceAll("([\\s(])player([\\s.\\[])", "$1Game.getInstance().player$2")
+                .replaceAll("([\\s(])flags([\\s.\\[])", "$1Game.getInstance().flags$2");
     }
     private static String normalize(final String content) {
         final String name = getClassName(content);
