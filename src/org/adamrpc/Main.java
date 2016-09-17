@@ -56,13 +56,61 @@ public class Main {
                 .replaceAll("(\\s)doNext\\(", "$1BaseContent.doNext(")
                 .replaceAll("(\\s)menu\\(", "$1EngineCore.menu(")
                 .replaceAll("(\\s)addButton\\(", "$1EngineCore.addButton(")
-                .replaceAll("([\\s(])camp([\\s.\\[])", "$1Game.getInstance().scenes.camp$2")
-                .replaceAll("([\\s(])player([\\s.\\[])", "$1Game.getInstance().player$2")
-                .replaceAll("([\\s(])flags([\\s.\\[])", "$1Game.getInstance().flags$2");
+                .replaceAll("(\\s)dynStats\\(", "$1EngineCore.dynStats(")
+                .replaceAll("(\\s)HPChange\\(", "$1EngineCore.HPChange(")
+                .replaceAll("(\\s)fatigue\\(", "$1EngineCore.fatigue(")
+                .replaceAll("(\\s)changeFatigue\\(", "$1EngineCore.changeFatigue(")
+                .replaceAll("(\\s)silly\\(", "$1EngineCore.silly(")
+                .replaceAll("(\\s)rand\\(", "$1Utils.rand(")
+                .replaceAll("(\\s)cockDescript\\(", "$1Descriptors.cockDescript(")
+                .replaceAll("(\\s)multiCockDescriptLight\\(", "$1Descriptors.multiCockDescriptLight(")
+                .replaceAll("(\\s)clitDescript\\(", "$1Descriptors.clitDescript(")
+                .replaceAll("(\\s)vaginaDescript\\(", "$1Descriptors.vaginaDescript(")
+                .replaceAll("(\\s)breastDescript\\(", "$1Descriptors.breastDescript(")
+                .replaceAll("(\\s)nippleDescript\\(", "$1Descriptors.nippleDescript(")
+                .replaceAll("(\\s)buttDescript\\(", "$1Descriptors.buttDescript(")
+                .replaceAll("(\\s)sackDescript\\(", "$1Descriptors.sackDescript(")
+                .replaceAll("(\\s)simpleBallsDescript\\(", "$1Descriptors.simpleBallsDescript(")
+                .replaceAll("(\\s)assholeDescript\\(", "$1Descriptors.assholeDescript(")
+                .replaceAll("(\\s)multiCockDescript\\(", "$1Descriptors.multiCockDescript(")
+                .replaceAll("(\\s)ballsDescriptLight\\(", "$1Descriptors.ballsDescriptLight(")
+                .replaceAll("(\\s)hipDescript\\(", "$1Descriptors.hipDescript(")
+                .replaceAll("(\\s)allBreastsDescript\\(", "$1Descriptors.allBreastsDescript(")
+                .replaceAll("(\\s)hairDescript\\(", "$1Descriptors.hairDescript(")
+                .replaceAll("(\\s)assDescript\\(", "$1Descriptors.assDescript(")
+                .replaceAll("(\\s)sMultiCockDesc\\(", "$1Descriptors.sMultiCockDesc(")
+                .replaceAll("(\\s)SMultiCockDesc\\(", "$1Descriptors.SMultiCockDesc(")
+                .replaceAll("(\\s)allChestDesc\\(", "$1Descriptors.allChestDesc(")
+                .replaceAll("(\\s)GENDER_", "$1AppearanceDefs.GENDER_")
+                .replaceAll("(\\s)SKIN_TYPE_", "$1AppearanceDefs.SKIN_TYPE_")
+                .replaceAll("(\\s)HAIR_", "$1AppearanceDefs.HAIR_")
+                .replaceAll("(\\s)FACE_", "$1AppearanceDefs.FACE_")
+                .replaceAll("(\\s)TONUGE_", "$1AppearanceDefs.TONUGE_")
+                .replaceAll("(\\s)EYES_", "$1AppearanceDefs.EYES_")
+                .replaceAll("(\\s)EARS_", "$1AppearanceDefs.EARS_")
+                .replaceAll("(\\s)HORNS_", "$1AppearanceDefs.HORNS_")
+                .replaceAll("(\\s)ANTENNAE_", "$1AppearanceDefs.ANTENNAE_")
+                .replaceAll("(\\s)ARM_TYPE_", "$1AppearanceDefs.ARM_TYPE_")
+                .replaceAll("(\\s)TAIL_TYPE_", "$1AppearanceDefs.TAIL_TYPE_")
+                .replaceAll("(\\s)BREAST_CUP_", "$1AppearanceDefs.BREAST_CUP_")
+                .replaceAll("(\\s)WING_TYPE_", "$1AppearanceDefs.WING_TYPE_")
+                .replaceAll("(\\s)LOWER_BODY_", "$1AppearanceDefs.LOWER_BODY_")
+                .replaceAll("(\\s)PIERCING_TYPE_", "$1AppearanceDefs.PIERCING_TYPE_")
+                .replaceAll("(\\s)VAGINA_TYPE_", "$1AppearanceDefs.VAGINA_TYPE_")
+                .replaceAll("(\\s)VAGINA_WETNESS_", "$1AppearanceDefs.VAGINA_WETNESS_")
+                .replaceAll("(\\s)VAGINA_LOOSENESS_", "$1AppearanceDefs.VAGINA_LOOSENESS_")
+                .replaceAll("(\\s)ANAL_WETNESS_", "$1AppearanceDefs.ANAL_WETNESS_")
+                .replaceAll("(\\s)ANAL_LOOSENESS_", "$1AppearanceDefs.ANAL_LOOSENESS_")
+                .replaceAll("(\\s)HIP_RATING_", "$1AppearanceDefs.HIP_RATING_")
+                .replaceAll("(\\s)BUTT_RATING_", "$1AppearanceDefs.BUTT_RATING_")
+                .replaceAll("([\\s(])camp([\\s.\\[])", "$1CoC.getInstance().scenes.camp$2")
+                .replaceAll("([\\s(])player([\\s.\\[])", "$1CoC.getInstance().player$2")
+                .replaceAll("([\\s(])flags([\\s.\\[])", "$1CoC.getInstance().flags$2");
     }
     private static String normalize(final String content) {
         final String name = getClassName(content);
         final Stream<String> members = Stream.of(getPublicFunctions(content), getPrivateFunctions(content), getPublicVariables(content), getPrivateVariables(content)).flatMap(Collection::stream);
+        final Stream<String> staticMembers = Stream.of(getPublicConstants(content), getPrivateConstants(content)).flatMap(Collection::stream);
         String result = content.replaceAll("public function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
                 .replaceAll("private function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
                 .replaceAll("public static const ([^ ]+?):.*?=", "var $1 =")
@@ -86,6 +134,9 @@ public class Main {
                 .replaceAll("MY_CUSTOM_ESCAPE_PLACEHOLDER", "\"");
         for(final String item : members.collect(Collectors.toList())) {
             result = result.replaceAll("([\\s(\\[{])" + item + "([ ()=><])", "$1this." + item + "$2");
+        }
+        for(final String item : staticMembers.collect(Collectors.toList())) {
+            result = result.replaceAll("([\\s(\\[{])" + item + "([ ()=><])", "$1" + name + "." + item + "$2");
         }
         return prefixGameFunctionCalls(result);
     }
