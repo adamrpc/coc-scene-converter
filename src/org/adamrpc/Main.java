@@ -31,7 +31,7 @@ public class Main {
         }
     }
     private static String getClassName(final String content) {
-        final Pattern pattern = Pattern.compile("public( final)? class (.+?) ");
+        final Pattern pattern = Pattern.compile("public( final)? class (.+?)[\\s{]");
         final Matcher matcher = pattern.matcher(content);
         return matcher.find() ? matcher.group(2) : "";
     }
