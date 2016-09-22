@@ -24,22 +24,16 @@ public class Main {
             System.out.println("Private constants : \n\t" + String.join("\n\t", getPrivateConstants(content)));
             System.out.println("Public variables : \n\t" + String.join("\n\t", getPublicVariables(content)));
             System.out.println("Private variables : \n\t" + String.join("\n\t", getPrivateVariables(content)));
-            final StringBuilder suffix = new StringBuilder();
-            suffix.append("\nreturn {\n\t" + className + " : " + className);
-            for(final String constant : constants) {
-                suffix.append(",\n\t" + constant + " : " + constant );
-            }
-            suffix.append("\n };");
-            final String newContent = normalize(content) + suffix;
+            final String newContent = normalize(content) + "\nreturn " + className + ";";
             Files.write(new File(getClassName(content) + ".js").toPath(), newContent.getBytes());
         } catch(final IOException e) {
             e.printStackTrace();
         }
     }
     private static String getClassName(final String content) {
-        final Pattern pattern = Pattern.compile("public class (.+?) ");
+        final Pattern pattern = Pattern.compile("public( final)? class (.+?) ");
         final Matcher matcher = pattern.matcher(content);
-        return matcher.find() ? matcher.group(1) : "";
+        return matcher.find() ? matcher.group(2) : "";
     }
     private static List<String> matchAll(final String content, final String regex) {
         final Pattern pattern = Pattern.compile(regex);
@@ -62,6 +56,7 @@ public class Main {
                 .replaceAll("(\\s)changeFatigue\\(", "$1EngineCore.changeFatigue(")
                 .replaceAll("(\\s)silly\\(", "$1EngineCore.silly(")
                 .replaceAll("(\\s)rand\\(", "$1Utils.rand(")
+                .replaceAll("(\\s)curry\\(", "$1Utils.curry(")
                 .replaceAll("(\\s)cockDescript\\(", "$1Descriptors.cockDescript(")
                 .replaceAll("(\\s)multiCockDescriptLight\\(", "$1Descriptors.multiCockDescriptLight(")
                 .replaceAll("(\\s)clitDescript\\(", "$1Descriptors.clitDescript(")
@@ -110,11 +105,11 @@ public class Main {
     private static String normalize(final String content) {
         final String name = getClassName(content);
         final Stream<String> members = Stream.of(getPublicFunctions(content), getPrivateFunctions(content), getPublicVariables(content), getPrivateVariables(content)).flatMap(Collection::stream);
-        final Stream<String> staticMembers = Stream.of(getPublicConstants(content), getPrivateConstants(content)).flatMap(Collection::stream);
+        final Stream<String> staticMembers = Stream.of(getPublicConstants(content)).flatMap(Collection::stream);
         String result = content.replaceAll("public function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
                 .replaceAll("private function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
                 .replaceAll("public static const ([^ ]+?):.*?=", "var $1 =")
-                .replaceAll("public const ([^ ]+?):.*?=", "var $1 =")
+                .replaceAll("public const ([^ ]+?):.*?=", "$1 =")
                 .replaceAll("private static const ([^ ]+?):.*?=", "var $1 =")
                 .replaceAll("\\)\\s*?\\{", ") {")
                 .replaceAll("else\\s*?\\{", "else {")
