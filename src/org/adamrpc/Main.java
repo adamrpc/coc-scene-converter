@@ -47,7 +47,7 @@ public class Main {
     private static String prefixGameFunctionCalls(final String content) {
         return content.replaceAll("(\\s)outputText\\(", "$1EngineCore.outputText(")
                 .replaceAll("(\\s)clearOutput\\(", "$1EngineCore.clearOutput(")
-                .replaceAll("(\\s)doNext\\(", "$1BaseContent.doNext(")
+                .replaceAll("(\\s)doNext\\(", "$1EngineCore.doNext(")
                 .replaceAll("(\\s)menu\\(", "$1EngineCore.menu(")
                 .replaceAll("(\\s)addButton\\(", "$1EngineCore.addButton(")
                 .replaceAll("(\\s)dynStats\\(", "$1EngineCore.dynStats(")
