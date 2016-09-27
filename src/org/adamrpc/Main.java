@@ -14,15 +14,18 @@ import java.util.stream.Stream;
 public class Main {
     public static void main(String[] args) {
         try {
-            final String content = String.join("\n", Files.readAllLines(new File(args[0]).toPath()));
+            String content = String.join("\n", Files.readAllLines(new File(args[0]).toPath()));
             final String className = getClassName(content);
+            content = content.replaceAll("([\\s(])([^\\s:]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
             final List<String> constants = getPublicConstants(content);
             System.out.println("Class name : " + className);
             System.out.println("Public functions : \n\t" + String.join("\n\t", getPublicFunctions(content)));
+            System.out.println("Protected functions : \n\t" + String.join("\n\t", getProtectedFunctions(content)));
             System.out.println("Private functions : \n\t" + String.join("\n\t", getPrivateFunctions(content)));
             System.out.println("Public constants : \n\t" + String.join("\n\t", constants));
             System.out.println("Private constants : \n\t" + String.join("\n\t", getPrivateConstants(content)));
             System.out.println("Public variables : \n\t" + String.join("\n\t", getPublicVariables(content)));
+            System.out.println("Protected variables : \n\t" + String.join("\n\t", getProtectedVariables(content)));
             System.out.println("Private variables : \n\t" + String.join("\n\t", getPrivateVariables(content)));
             final String newContent = normalize(content) + "\nreturn " + className + ";";
             Files.write(new File(getClassName(content) + ".js").toPath(), newContent.getBytes());
@@ -104,21 +107,24 @@ public class Main {
     }
     private static String normalize(final String content) {
         final String name = getClassName(content);
-        final Stream<String> members = Stream.of(getPublicFunctions(content), getPrivateFunctions(content), getPublicVariables(content), getPrivateVariables(content)).flatMap(Collection::stream);
+        final Stream<String> members = Stream.of(getPublicFunctions(content), getProtectedFunctions(content), getPrivateFunctions(content), getPublicVariables(content), getProtectedVariables(content), getPrivateVariables(content)).flatMap(Collection::stream);
         final Stream<String> staticMembers = Stream.of(getPublicConstants(content)).flatMap(Collection::stream);
         String result = content.replaceAll("public function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
+                .replaceAll("protected function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
                 .replaceAll("private function ([^ ]+?) ?\\((.*?)\\)[\\s\\S]*?\\{", name + ".prototype.$1 = function($2) {")
-                .replaceAll("public static const ([^ ]+?):.*?=", "var $1 =")
-                .replaceAll("public const ([^ ]+?):.*?=", "$1 =")
-                .replaceAll("private static const ([^ ]+?):.*?=", "var $1 =")
+                .replaceAll("public static const ([^\\s]+?)\\s*=", "$1 =")
+                .replaceAll("public const ([^\\s]+?)\\s*=", "$1 =")
+                .replaceAll("private static const ([^\\s]+?)\\s*=", "var $1 =")
                 .replaceAll("\\)\\s*?\\{", ") {")
                 .replaceAll("else\\s*?\\{", "else {")
                 .replaceAll("\\}\\s*?else\\s", "} else ")
                 .replaceAll("\\\\\"", "MY_CUSTOM_ESCAPE_PLACEHOLDER")
                 .replaceAll("\"'", "\"\\'")
+                .replaceAll(" == ", " === ")
+                .replaceAll(" != ", " !== ")
                 .replaceAll("\\n\\s*?\\n", "\n");
         do {
-            final Matcher matcher = Pattern.compile("(\"[^\"]*?[^\\\\])'([^\"]*?\")", Pattern.DOTALL).matcher(result);
+            final Matcher matcher = Pattern.compile("(\"[^\"\\n]*?[^\\\\])'([^\"\\n]*?\")", Pattern.DOTALL).matcher(result);
             result = matcher.replaceAll("$1\\\\'$2");
             matcher.reset();
             if(!matcher.find()) {
@@ -135,6 +141,9 @@ public class Main {
         }
         return prefixGameFunctionCalls(result);
     }
+    private static List<String> getProtectedFunctions(final String content) {
+        return matchAll(content, "protected function ([^ ]+?) ?\\(");
+    }
     private static List<String> getPublicFunctions(final String content) {
         return matchAll(content, "public function ([^ ]+?) ?\\(");
     }
@@ -142,15 +151,18 @@ public class Main {
         return matchAll(content, "private function ([^ ]+?) ?\\(");
     }
     private static List<String> getPublicConstants(final String content) {
-        return Stream.concat(matchAll(content, "public static const ([^ ]+?):").stream(), matchAll(content, "public const ([^ ]+?):").stream()).collect(Collectors.toList());
+        return Stream.concat(matchAll(content, "public static const ([^\\s;=]+?)[\\s;=]").stream(), matchAll(content, "public const ([^\\s;=]+?)[\\s;=]").stream()).collect(Collectors.toList());
     }
     private static List<String> getPrivateConstants(final String content) {
-        return matchAll(content, "private static const ([^ ]+?):");
+        return matchAll(content, "private static const ([^\\s;=]+?)[\\s;=]");
     }
     private static List<String> getPublicVariables(final String content) {
-        return matchAll(content, "public var ([^ ]+?):");
+        return matchAll(content, "public var ([^\\s;=]+?)[\\s;=]");
+    }
+    private static List<String> getProtectedVariables(final String content) {
+        return matchAll(content, "protected var ([^\\s;=]+?)[\\s;=]");
     }
     private static List<String> getPrivateVariables(final String content) {
-        return matchAll(content, "private var ([^ ]+?):");
+        return matchAll(content, "private var ([^\\s;=]+?)[\\s;=]");
     }
 }
