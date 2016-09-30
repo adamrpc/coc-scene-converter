@@ -154,7 +154,7 @@ public class Main {
         return Stream.concat(matchAll(content, "public static const ([^\\s;=]+?)[\\s;=]").stream(), matchAll(content, "public const ([^\\s;=]+?)[\\s;=]").stream()).collect(Collectors.toList());
     }
     private static List<String> getPrivateConstants(final String content) {
-        return matchAll(content, "private static const ([^\\s;=]+?)[\\s;=]");
+        return Stream.concat(matchAll(content, "private static const ([^\\s;=]+?)[\\s;=]").stream(), matchAll(content, "private static var ([^\\s;=]+?)[\\s;=]").stream()).collect(Collectors.toList());
     }
     private static List<String> getPublicVariables(final String content) {
         return matchAll(content, "public var ([^\\s;=]+?)[\\s;=]");
