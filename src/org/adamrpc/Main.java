@@ -19,6 +19,7 @@ public class Main {
             content = content.replaceAll("(case [^ :]+ ?|default ?):", "$1{SWITCH_PLACEHOLDER}");
             content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
             content = content.replaceAll("\\{SWITCH_PLACEHOLDER}", ":");
+            content = handleAllInlineIf(content);
             final List<String> constants = getPublicConstants(content);
             System.out.println("Class name : " + className);
             System.out.println("Public functions : \n\t" + String.join("\n\t", getPublicFunctions(content)));
@@ -232,6 +233,45 @@ public class Main {
     }
     private static List<String> getWarnings(final String content) {
         return matchAll(content, "\n(.*[^\\t{] [a-zA-Z]+ [a-zA-Z]+\\.[a-zA-Z].*)\n");
+    }
+
+    private static String getInlineIfAction(final String content) throws IOException {
+        String newContent = content;
+        String oldContent;
+        final Pattern pattern = Pattern.compile("(\\t(else)?if ?(\\([^\\(\\)]*\\))|\\telse )[^\\n]*");
+        Matcher matcher = pattern.matcher(newContent);
+        while(!matcher.find()) {
+            oldContent = newContent;
+            newContent = oldContent.replaceAll("(\\t(else)?if ?\\(.*?)(\\([^\\(\\)]*\\))([^\\n]*)", "$1$4");
+            matcher = pattern.matcher(newContent);
+            if(newContent.equals(oldContent)) {
+                throw new IOException(content);
+            }
+        }
+        return newContent.replaceAll("(\\t(else)?if ?(\\([^\\(\\)]*\\))|\\telse )([^\\n]*)", "$4");
+    }
+
+    private static List<String> allInlineIf(final String content) {
+        final Pattern pattern = Pattern.compile("(\\t(else)?if ?( ?\\([^\\(\\)]*\\))|\\telse )[^\\n]+");
+        final Matcher matcher = pattern.matcher(content);
+        final List<String> result = new LinkedList<>();
+        while(matcher.find()) {
+            result.add(matcher.group(0));
+        }
+        return result;
+    }
+
+    private static String handleAllInlineIf(final String content) {
+        String result = content;
+        System.out.println("Handle inline ifs");
+        for(final String inlineIf :  allInlineIf(content.replaceAll("(\\selse) (if ?\\()", "$1$2"))) {
+            try {
+                result = result.replaceAll("(\\t((else )?if ?\\(|else )[^\\n]*)(" + getInlineIfAction(inlineIf).replaceAll("([\\(\\)\\{\\[])", "\\\\$1") + ")", "$1\n\t$4");
+            }catch(final IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
 }
