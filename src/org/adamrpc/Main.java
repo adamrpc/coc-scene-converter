@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,28 +14,30 @@ import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            String content = String.join("\n", Files.readAllLines(new File(args[0]).toPath()));
-            final String className = getClassName(content);
-            content = content.replaceAll("(case [^ :]+ ?|default ?):", "$1{SWITCH_PLACEHOLDER}");
-            content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
-            content = content.replaceAll("\\{SWITCH_PLACEHOLDER}", ":");
-            content = handleAllInlineIf(content);
-            final List<String> constants = getPublicConstants(content);
-            System.out.println("Class name : " + className);
-            System.out.println("Public functions : \n\t" + String.join("\n\t", getPublicFunctions(content)));
-            System.out.println("Protected functions : \n\t" + String.join("\n\t", getProtectedFunctions(content)));
-            System.out.println("Private functions : \n\t" + String.join("\n\t", getPrivateFunctions(content)));
-            System.out.println("Public constants : \n\t" + String.join("\n\t", constants));
-            System.out.println("Private constants : \n\t" + String.join("\n\t", getPrivateConstants(content)));
-            System.out.println("Public variables : \n\t" + String.join("\n\t", getPublicVariables(content)));
-            System.out.println("Protected variables : \n\t" + String.join("\n\t", getProtectedVariables(content)));
-            System.out.println("Private variables : \n\t" + String.join("\n\t", getPrivateVariables(content)));
-            final String newContent = normalize(content) + "\nreturn " + className + ";";
-            Files.write(new File(getClassName(content) + ".js").toPath(), newContent.getBytes());
-            System.out.println("Warnings : \n\t" + String.join("\n\t", getWarnings(newContent)));
-        } catch(final IOException e) {
-            e.printStackTrace();
+        for(final File file : (new File(".")).listFiles((File dir, String name) -> { return name.toLowerCase().endsWith(".as"); })) {
+            try {
+                String content = String.join("\n", Files.readAllLines(file.toPath()));
+                final String className = getClassName(content);
+                content = content.replaceAll("(case [^ :]+ ?|default ?|[\\t\\n]//[^\n]*):", "$1{SWITCH_PLACEHOLDER}");
+                content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
+                content = content.replaceAll("\\{SWITCH_PLACEHOLDER}", ":");
+                content = handleAllInlineIf(content);
+                final List<String> constants = getPublicConstants(content);
+                System.out.println("Class name : " + className);
+                System.out.println("Public functions : \n\t" + String.join("\n\t", getPublicFunctions(content)));
+                System.out.println("Protected functions : \n\t" + String.join("\n\t", getProtectedFunctions(content)));
+                System.out.println("Private functions : \n\t" + String.join("\n\t", getPrivateFunctions(content)));
+                System.out.println("Public constants : \n\t" + String.join("\n\t", constants));
+                System.out.println("Private constants : \n\t" + String.join("\n\t", getPrivateConstants(content)));
+                System.out.println("Public variables : \n\t" + String.join("\n\t", getPublicVariables(content)));
+                System.out.println("Protected variables : \n\t" + String.join("\n\t", getProtectedVariables(content)));
+                System.out.println("Private variables : \n\t" + String.join("\n\t", getPrivateVariables(content)));
+                final String newContent = normalize(content) + "\nreturn " + className + ";";
+                Files.write(new File(getClassName(content) + ".js").toPath(), newContent.getBytes());
+                System.out.println("Warnings : \n\t" + String.join("\n\t", getWarnings(newContent)));
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     private static String getClassName(final String content) {
@@ -266,7 +269,10 @@ public class Main {
         System.out.println("Handle inline ifs");
         for(final String inlineIf :  allInlineIf(content.replaceAll("(\\selse) (if ?\\()", "$1$2"))) {
             try {
-                result = result.replaceAll("(\\t((else )?if ?\\(|else )[^\\n]*)(" + getInlineIfAction(inlineIf).replaceAll("([\\(\\)\\{\\[])", "\\\\$1") + ")", "$1\n\t$4");
+                final String action = getInlineIfAction(inlineIf);
+                if(!action.trim().equals("{") && !action.trim().equals("")) {
+                    result = result.replaceAll("(\\t((else )?if ?\\(|else )[^\\n]*)(" + action.replaceAll("([\\(\\)\\{\\[])", "\\\\$1") + ")", "$1\n\t$4");
+                }
             }catch(final IOException e) {
                 e.printStackTrace();
             }
