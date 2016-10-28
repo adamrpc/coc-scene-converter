@@ -19,7 +19,7 @@ public class Main {
                 String content = String.join("\n", Files.readAllLines(file.toPath()));
                 final String className = getClassName(content);
                 content = content.replaceAll("(case [^ :]+ ?|default ?|[\\t\\n]//[^\n]*):", "$1{SWITCH_PLACEHOLDER}");
-                content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
+                content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:\"]+)\\s*:\\s*[^\\s,;=)]+([\\s,;=)])", "$1$2$3");
                 content = content.replaceAll("\\{SWITCH_PLACEHOLDER}", ":");
                 content = handleAllInlineIf(content);
                 final List<String> constants = getPublicConstants(content);
@@ -68,7 +68,14 @@ public class Main {
                 .replaceAll("([^a-zA-Z]\\s|[(!])changeFatigue\\(", "$1EngineCore.changeFatigue(")
                 .replaceAll("([^a-zA-Z]\\s|[(!])silly\\(", "$1EngineCore.silly(")
                 .replaceAll("([^a-zA-Z]\\s|[(!])hideMenus\\(", "$1EngineCore.hideMenus(")
-                .replaceAll("([^a-zA-Z]\\s|[(!])rand\\(", "$1Utils.rand(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])spriteSelect\\(", "$1EngineCore.spriteSelect(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])createCallBackFunction2\\(", "$1EngineCore.createCallBackFunction2(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])createCallBackFunction\\(", "$1EngineCore.createCallBackFunction(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])doYesNo\\(", "$1EngineCore.doYesNo(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])cleanupAfterCombat\\(", "$1Combat.cleanupAfterCombat(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])startCombat\\(", "$1Combat.startCombat(")
+                .replaceAll("([^a-zA-Z]\\s|[(!\\[])rand\\(", "$1Utils.rand(")
+                .replaceAll("([^a-zA-Z]\\s|[(!])num2Text\\(", "$1Utils.num2Text(")
                 .replaceAll("([^a-zA-Z]\\s|[(!])curry\\(", "$1Utils.curry(")
                 .replaceAll("([^a-zA-Z]\\s|[(!])cockDescript\\(", "$1Descriptors.cockDescript(")
                 .replaceAll("([^a-zA-Z]\\s|[(!])multiCockDescriptLight\\(", "$1Descriptors.multiCockDescriptLight(")
@@ -171,7 +178,12 @@ public class Main {
                 .replaceAll("([^a-zA-Z]\\s|[(!])valeria([\\s()])", "$1CoC.getInstance().scenes.valeria$2")
                 .replaceAll("([^a-zA-Z]\\s|[(!])vapula([\\s()])", "$1CoC.getInstance().scenes.vapula$2")
                 .replaceAll("([^a-zA-Z]\\s|[(!])vapulaSlave([\\s()])", "$1CoC.getInstance().scenes.vapula.vapulaSlave$2")
-                .replaceAll("([^a-zA-Z]\\s|[(!])player([\\s.\\[])", "$1CoC.getInstance().player$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!\\[])player([\\s.\\[])", "$1CoC.getInstance().player$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!\\[])monster([\\s.\\[])", "$1CoC.getInstance().monster$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!])inventory([\\s.\\[])", "$1CoC.getInstance().inventory$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!])playerMenu([\\s.\\[])", "$1EventParser.playerMenu$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!])consumables([\\s.\\[])", "$1ConsumableLib$2")
+                .replaceAll("([^a-zA-Z]\\s|[(!])useables([\\s.\\[])", "$1UsableLib$2")
                 .replaceAll("([^a-zA-Z]\\s|[(!])flags([\\s.\\[])", "$1CoC.getInstance().flags$2");
     }
     private static String normalize(final String content) {
@@ -203,10 +215,10 @@ public class Main {
         result = result.replaceAll("\"([^\"]*?)\"", "'$1'")
                 .replaceAll("MY_CUSTOM_ESCAPE_PLACEHOLDER", "\"");
         for(final String item : members.collect(Collectors.toList())) {
-            result = result.replaceAll("([^a-zA-Z]\\s|[(\\[{!])" + item + "([ ()=><])", "$1this." + item + "$2");
+            result = result.replaceAll("([^a-zA-Z]\\s|[(\\[{!])" + item + "([ ()=><,])", "$1this." + item + "$2");
         }
         for(final String item : staticMembers.collect(Collectors.toList())) {
-            result = result.replaceAll("([^a-zA-Z]\\s|[(\\[{!])" + item + "([ ()=><])", "$1" + name + "." + item + "$2");
+            result = result.replaceAll("([^a-zA-Z]\\s|[(\\[{!])" + item + "([ ()=><,])", "$1" + name + "." + item + "$2");
         }
         return prefixGameFunctionCalls(result);
     }
