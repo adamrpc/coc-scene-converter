@@ -80,6 +80,7 @@ public class Main {
                 .replaceAll(BEFORE_MEMBER + "doYesNo" + AFTER_MEMBER, "$1EngineCore.doYesNo$2")
                 .replaceAll(BEFORE_MEMBER + "cleanupAfterCombat" + AFTER_MEMBER, "$1Combat.cleanupAfterCombat$2")
                 .replaceAll(BEFORE_MEMBER + "startCombat" + AFTER_MEMBER, "$1Combat.startCombat$2")
+                .replaceAll(BEFORE_MEMBER + "combatRoundOver" + AFTER_MEMBER, "$1Combat.combatRoundOver$2")
                 .replaceAll(BEFORE_MEMBER + "rand" + AFTER_MEMBER, "$1Utils.rand$2")
                 .replaceAll(BEFORE_MEMBER + "num2Text" + AFTER_MEMBER, "$1Utils.num2Text$2")
                 .replaceAll(BEFORE_MEMBER + "curry" + AFTER_MEMBER, "$1Utils.curry$2")
