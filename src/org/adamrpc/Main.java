@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 public class Main {
     private static String BEFORE_MEMBER = "([()!\\[{},;=<>&|+\\-*/]\\s*)";
     private static String AFTER_MEMBER = "([\\s()=><,;.\\[])";
+    private static String AFTER_FUNCTION = "([(])";
     public static void main(String[] args) {
         for(final File file : (new File(".")).listFiles((File dir, String name) -> { return name.toLowerCase().endsWith(".as"); })) {
             try {
@@ -21,6 +22,7 @@ public class Main {
                 final String className = getClassName(content);
                 content = content.replaceAll("(\\n\\s*//[^\\n]*)", "$1;");
                 content = content.replaceAll("(case [^ :]+ ?|default ?|[\\t\\n]//[^\n]*):", "$1{SWITCH_PLACEHOLDER}");
+                content = content.replaceAll("(\"[^\"\n]*):([^\"\n]*\")", "$1{SWITCH_PLACEHOLDER}$2");
                 content = content.replaceAll("([a-zA-Z]\\s|[(!])([^\\s:\"]+)\\s*:\\s*[^\\s,;=)\\{]+([\\s,;=)\\{])", "$1$2$3");
                 content = content.replaceAll("\\{SWITCH_PLACEHOLDER}", ":");
                 content = handleAllInlineIf(content);
@@ -65,7 +67,7 @@ public class Main {
                 .replaceAll(BEFORE_MEMBER + "menu" + AFTER_MEMBER, "$1EngineCore.menu$2")
                 .replaceAll(BEFORE_MEMBER + "addButton" + AFTER_MEMBER, "$1EngineCore.addButton$2")
                 .replaceAll(BEFORE_MEMBER + "dynStats" + AFTER_MEMBER, "$1EngineCore.dynStats$2")
-                .replaceAll(BEFORE_MEMBER + "choices" + AFTER_MEMBER, "$1EngineCore.choices$2")
+                .replaceAll(BEFORE_MEMBER + "choices" + AFTER_FUNCTION, "$1EngineCore.choices$2")
                 .replaceAll(BEFORE_MEMBER + "simpleChoices" + AFTER_MEMBER, "$1EngineCore.choices$2")
                 .replaceAll(BEFORE_MEMBER + "HPChange" + AFTER_MEMBER, "$1EngineCore.HPChange$2")
                 .replaceAll(BEFORE_MEMBER + "fatigue" + AFTER_MEMBER, "$1EngineCore.fatigue$2")
@@ -157,7 +159,7 @@ public class Main {
                 .replaceAll(BEFORE_MEMBER + "izmaFollower" + AFTER_MEMBER, "$1CoC.getInstance().scenes.izmaScene.izmaFollower$2")
                 .replaceAll(BEFORE_MEMBER + "izmaScene" + AFTER_MEMBER, "$1CoC.getInstance().scenes.izmaScene$2")
                 .replaceAll(BEFORE_MEMBER + "jojoScene" + AFTER_MEMBER, "$1CoC.getInstance().scenes.jojoScene$2")
-                .replaceAll(BEFORE_MEMBER + "monk" + AFTER_MEMBER, "$1CoC.getInstance().monk$2")
+                .replaceAll(BEFORE_MEMBER + "monk" + AFTER_MEMBER, "$1CoC.getInstance().scenes.jojoScene.monk$2")
                 .replaceAll(BEFORE_MEMBER + "campCorruptJojo" + AFTER_MEMBER, "$1CoC.getInstance().scenes.jojoScene.campCorruptJojo$2")
                 .replaceAll(BEFORE_MEMBER + "kihaFollower" + AFTER_MEMBER, "$1CoC.getInstance().scenes.kihaFollower$2")
                 .replaceAll(BEFORE_MEMBER + "kihaScene" + AFTER_MEMBER, "$1CoC.getInstance().scenes.kihaScene$2")
